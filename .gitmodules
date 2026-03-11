@@ -1,0 +1,8 @@
+[submodule "frontend"]
+	path = frontend
+	url = git@github.com:Donaschmi/openmrs-esm-clinomix.git
+	branch = clinomix
+[submodule "backend"]
+	path = backend
+	url = git@github.com:Donaschmi/openmrs-clinomix-module.git
+	branch = hapi-fhir

@@ -1,0 +1,64 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+      OMRS_CONFIG_CREATE_TABLES: "true"
+      OMRS_CONFIG_CONNECTION_SERVER: db
+      OMRS_CONFIG_CONNECTION_DATABASE: openmrs
+      OMRS_CONFIG_CONNECTION_USERNAME: openmrs
+      OMRS_CONFIG_CONNECTION_PASSWORD: openmrs
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.11.7
+    command: "mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+    environment:
+      MYSQL_DATABASE: openmrs
+      MYSQL_USER: openmrs
+      MYSQL_PASSWORD: openmrs
+      MYSQL_ROOT_PASSWORD: openmrs
+      services:
+
+  hapi-fhir:
+    image: hapiproject/hapi:latest
+    container_name: clinomix-hapi-fhir
+    restart: on-failure
+    ports:
+      - "8082:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://hapi-postgres:5432/hapi"
+      SPRING_DATASOURCE_USERNAME: "admin"
+      SPRING_DATASOURCE_PASSWORD: "admin"
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.postgresql.Driver"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect"
+      hapi.fhir.allow_external_references: "true"
+      hapi.fhir.allow_multiple_delete: "true"
+      hapi.fhir.fhir_version: "R4"
+    depends_on:
+      hapi-postgres:
+        condition: service_healthy
+
+  hapi-postgres:
+    image: postgres:16-alpine
+    container_name: clinomix-hapi-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: "hapi"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "admin"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d hapi"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    volumes:
+      - hapi-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  hapi-postgres-data:
