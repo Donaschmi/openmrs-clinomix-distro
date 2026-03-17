@@ -5,4 +5,4 @@
 [submodule "backend"]
 	path = backend
 	url = git@github.com:Donaschmi/openmrs-clinomix-module.git
-	branch = hapi-fhir
+	branch = openmrs
