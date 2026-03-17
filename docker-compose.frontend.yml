@@ -10,6 +10,7 @@ services:
     restart: "no"
 
   backend:
+    #build: ./backend
     image: openmrs/openmrs-core:2.7.4
     container_name: clinomx-openmrs-backend
     ports:
@@ -30,6 +31,14 @@ services:
       db:
         condition: service_started
 
+  frontend:
+    build: ./frontend
+    container_name: clinomx-openmrs-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
   db:
     image: mariadb:10.11.7
     container_name: clinomx-openmrs-db
@@ -41,4 +50,5 @@ services:
       MYSQL_ROOT_PASSWORD: openmrs
 
 volumes:
+  omod-modules:
   maven-cache:
